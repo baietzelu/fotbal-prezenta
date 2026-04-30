@@ -1,125 +1,37 @@
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fotbal Prezență - Miercuri 29.04</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background:#f8f9fa; margin:0; padding:15px; }
-    .container { max-width:620px; margin:auto; background:white; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); overflow:hidden; }
-    header { background:linear-gradient(135deg,#1a73e8,#34a853); color:white; padding:20px; text-align:center; }
-    .section { padding:18px 20px; border-bottom:1px solid #eee; }
-    button { width:100%; padding:14px; margin:6px 0; border:none; border-radius:8px; font-size:1.05em; cursor:pointer; }
-    .success { background:#34a853; }
-    .portar-btn { background:#d93025; }
-    .status { font-size:1.4em; font-weight:bold; text-align:center; color:#1a73e8; }
-  </style>
+<!DOCTYPE html><html lang="ro" data-theme="dark"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Fotbal Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="container">
-    <header><h1>Miercuri 29.04 — Fotbal</h1></header>
-
-    <div class="section">
-      <p><strong>Se colectează prezența</strong></p>
-      <p class="status" id="total-count">0/12 confirmați</p>
+<main class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none" aria-label="Fotbal Manager">
+        <circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="2"></circle>
+        <path d="M16 4 L20 12 L28 12 L22 18 L24 26 L16 21 L8 26 L10 18 L4 12 L12 12 Z" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"></path>
+      </svg>
+      <h1>Fotbal Manager</h1>
+      <p>Autentificare administrator</p>
     </div>
-
-    <div class="section">
-      <h2>📋 Confirmă prezența</h2>
-      <select id="nume-select">
-        <option value="">— Alege numele tău —</option>
-        <option value="Alfred">Alfred</option>
-        <option value="Bosoi">Bosoi</option>
-        <option value="Cosmin TV">Cosmin TV</option>
-        <option value="Edy">Edy</option>
-        <option value="Găină">Găină</option>
-        <option value="Gox">Gox</option>
-        <option value="Mirică Alex">Mirică Alex</option>
-        <option value="Andrei">Andrei (portar)</option>
-        <option value="Anini">Anini (portar)</option>
-      </select>
-
-      <button onclick="confirma('camp')">✅ Confirmă ca JUCĂTOR DE CÂMP</button>
-      <button onclick="confirma('portar')" class="portar-btn">🧤 Confirmă ca PORTAR</button>
-    </div>
-
-    <div class="section">
-      <h2>✅ Prezență Live</h2>
-      <ul id="lista-camp"></ul>
-      <ul id="lista-portari"></ul>
-      <p id="status-text"></p>
-    </div>
+        <form method="POST" class="form-stack">
+      <div class="form-group">
+        <label class="form-label" for="username">Utilizator</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="admin" required="" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Parolă</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required="" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary w-full mt-4">Conectare</button>
+    </form>
   </div>
+</main>
+<script src="js/app.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-  <script>
-    // ================== CONFIG FIREBASE (OBLIGATORIU) ==================
-    const firebaseConfig = {
-      apiKey: "AIzA...",           // ← Schimbă cu al tău
-      authDomain: "nume-proiect.firebaseapp.com",
-      databaseURL: "https://nume-proiect-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "nume-proiect",
-      storageBucket: "nume-proiect.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:xxxxxxxxxxxxxxxx"
-    };
-    // =================================================================
-
-    let db, prezentaRef;
-
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      prezentaRef = db.ref('prezenta_miercuri_29_04');
-      console.log("✅ Firebase conectat cu succes");
-    } catch (e) {
-      console.error("❌ Eroare Firebase:", e);
-      alert("Eroare la inițializarea Firebase. Verifică config-ul!");
-    }
-
-    function confirma(tip) {
-      const nume = document.getElementById('nume-select').value;
-      if (!nume) return alert("Te rog alege un nume din listă!");
-
-      if (!prezentaRef) return alert("Firebase nu este conectat!");
-
-      const ref = tip === 'camp' ? prezentaRef.child('camp') : prezentaRef.child('portari');
-
-      ref.child(nume).once('value', snap => {
-        if (snap.exists()) {
-          alert("❌ " + nume + " este deja confirmat!");
-        } else {
-          ref.child(nume).set(true)
-            .then(() => {
-              alert("✅ " + nume + " confirmat cu succes!");
-            })
-            .catch(err => {
-              console.error(err);
-              alert("❌ Eroare la confirmare: " + err.message);
-            });
-        }
-      });
-    }
-
-    // Actualizare live
-    if (prezentaRef) {
-      prezentaRef.on('value', snapshot => {
-        const data = snapshot.val() || {camp:{}, portari:{}};
-        let htmlCamp = '', htmlPortari = '';
-
-        Object.keys(data.camp || {}).sort().forEach(n => {
-          if (data.camp[n]) htmlCamp += `<li>⚽ ${n}</li>`;
-        });
-        Object.keys(data.portari || {}).sort().forEach(n => {
-          if (data.portari[n]) htmlPortari += `<li>🧤 ${n}</li>`;
-        });
-
-        document.getElementById('lista-camp').innerHTML = htmlCamp ? `<h3>⚽ Câmp</h3><ul>${htmlCamp}</ul>` : '';
-        document.getElementById('lista-portari').innerHTML = htmlPortari ? `<h3>🧤 Portari</h3><ul>${htmlPortari}</ul>` : '';
-      });
-    }
-  </script>
-</body>
-</html>
+</body></html>
